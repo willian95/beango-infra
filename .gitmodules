@@ -1,0 +1,9 @@
+[submodule "beango-front"]
+	path = beango-front
+	url = git@github.com:CristhianM21/beango-front.git
+[submodule "beango-admin"]
+	path = beango-admin
+	url = git@github.com:CristhianM21/beango-admin.git
+[submodule "beango-backend"]
+	path = beango-backend
+	url = git@github.com:CristhianM21/beango-backend.git
