@@ -8,7 +8,7 @@ services:
       MARIADB_PASSWORD: ${DB_PASSWORD:-beango}
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
