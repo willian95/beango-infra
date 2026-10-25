@@ -44,7 +44,7 @@ Solo en `beango-front` y `beango-admin`, además:
 
 | Nombre | Tipo | Valor |
 |---|---|---|
-| `VITE_API_URL` | Variable (no secret) | URL pública de la API, p.ej. `http://<ip-o-dominio>:8000/api/v1` — queda incrustada en el build, igual que en `DEPLOY.md` |
+| `VITE_API_URL` | Variable (no secret) | URL pública de la API, p.ej. `https://api.<dominio>/api/v1` — queda incrustada en el build, igual que en `DEPLOY.md` |
 
 ### En este repo (`beango-infra`)
 

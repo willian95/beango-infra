@@ -29,8 +29,7 @@ services:
   backend:
     image: ${DOCKERHUB_NAMESPACE:-willian95}/beango-backend:${BACKEND_TAG:-latest}
     restart: unless-stopped
-    ports:
-      - "8000:80"
+    # Sin puertos publicados: solo se entra por el proxy (HTTPS).
     environment: &backend_environment
       APP_ENV: ${APP_ENV:-production}
       APP_DEBUG: ${APP_DEBUG:-false}
@@ -88,20 +87,38 @@ services:
   front:
     image: ${DOCKERHUB_NAMESPACE:-willian95}/beango-front:${FRONT_TAG:-latest}
     restart: unless-stopped
-    ports:
-      - "8080:80"
     depends_on:
       - backend
 
   admin:
     image: ${DOCKERHUB_NAMESPACE:-willian95}/beango-admin:${ADMIN_TAG:-latest}
     restart: unless-stopped
-    ports:
-      - "8081:80"
     depends_on:
+      - backend
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      BEANGO_DOMAIN: ${BEANGO_DOMAIN:?Define BEANGO_DOMAIN en .env}
+    volumes:
+      - ./infra/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificados emitidos: si se pierden, Caddy los vuelve a pedir y se
+      # puede chocar con los límites de Let's Encrypt.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - front
+      - admin
       - backend
 
 volumes:
   db_data:
   redis_data:
   backend_storage:
+  caddy_data:
+  caddy_config:

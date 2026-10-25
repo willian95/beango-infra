@@ -1,0 +1,26 @@
+# Proxy inverso de producción. Caddy pide y renueva solo los certificados
+# HTTPS (Let's Encrypt, con ZeroSSL de respaldo) y redirige HTTP → HTTPS.
+#
+# BEANGO_DOMAIN sale del .env del EC2 (ver docker-compose.prod.yml).
+# Provisional: <ip-con-guiones>.sslip.io, que resuelve a esa IP sin
+# configurar DNS. Para pasar a un dominio propio basta con cambiar la
+# variable, apuntar el DNS (raíz, admin. y api.) y recompilar front/admin.
+
+(common) {
+	encode zstd gzip
+}
+
+{$BEANGO_DOMAIN} {
+	import common
+	reverse_proxy front:80
+}
+
+admin.{$BEANGO_DOMAIN} {
+	import common
+	reverse_proxy admin:80
+}
+
+api.{$BEANGO_DOMAIN} {
+	import common
+	reverse_proxy backend:80
+}

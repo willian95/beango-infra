@@ -77,10 +77,27 @@ desarrollo):
 
 ## 5. Configurar `.env`
 
-Copia `.env.docker.example` como base, pero **usa la IP pública o el dominio
-real del servidor, no `localhost`** en las URLs — si dejas `localhost`, el
-front queda con la URL de la API mal incrustada (Vite la fija en tiempo de
-build) y el backend rechaza las peticiones por CORS.
+Copia `.env.docker.example` como base, pero **usa el dominio real del
+servidor, no `localhost`** en las URLs — si dejas `localhost`, el front
+queda con la URL de la API mal incrustada (Vite la fija en tiempo de build)
+y el backend rechaza las peticiones por CORS.
+
+Todo entra por el proxy inverso (servicio `proxy`, Caddy, config en
+[`proxy/Caddyfile`](proxy/Caddyfile)), que escucha en 80/443 y saca solo el
+certificado HTTPS. Backend, front y admin ya no publican puertos. Con
+`BEANGO_DOMAIN=<dominio>` quedan:
+
+| URL | Servicio |
+|---|---|
+| `https://<dominio>` | front |
+| `https://admin.<dominio>` | admin |
+| `https://api.<dominio>` | backend |
+
+Dominio provisional sin configurar DNS: `<ip-con-guiones>.sslip.io` (hoy
+`44-203-210-231.sslip.io`). Depende de la IP pública: si la instancia cambia
+de IP, cambia el dominio y hay que actualizar el `.env` y recompilar
+front/admin. Con un dominio propio, apunta `<dominio>`, `admin.<dominio>` y
+`api.<dominio>` (registros A) a la IP antes de levantar el proxy.
 
 ```env
 APP_KEY=base64:...   # docker compose -f docker-compose.prod.yml run --rm backend php artisan key:generate --show
@@ -89,10 +106,11 @@ DB_USERNAME=beango
 DB_PASSWORD=<contraseña real, no la de ejemplo>
 DB_ROOT_PASSWORD=<contraseña real, no la de ejemplo>
 
-APP_URL=http://<ip-o-dominio>:8000
-FRONTEND_URL=http://<ip-o-dominio>:8080
-ADMIN_URL=http://<ip-o-dominio>:8081
-VITE_API_URL=http://<ip-o-dominio>:8000/api/v1
+BEANGO_DOMAIN=<dominio>
+APP_URL=https://api.<dominio>
+FRONTEND_URL=https://<dominio>
+ADMIN_URL=https://admin.<dominio>
+VITE_API_URL=https://api.<dominio>/api/v1
 ```
 
 Si más adelante cambias la IP/dominio, `VITE_API_URL` ya no se toca en el
@@ -152,9 +170,9 @@ arriba, `OauthSeed` falla por clave duplicada.
 ## 8. Verificación
 
 ```bash
-curl -s -o /dev/null -w 'backend: %{http_code}\n' http://localhost:8000
-curl -s -o /dev/null -w 'front: %{http_code}\n'   http://localhost:8080
-curl -s -o /dev/null -w 'admin: %{http_code}\n'   http://localhost:8081
+curl -s -o /dev/null -w 'backend: %{http_code}\n' https://api.<dominio>
+curl -s -o /dev/null -w 'front: %{http_code}\n'   https://<dominio>
+curl -s -o /dev/null -w 'admin: %{http_code}\n'   https://admin.<dominio>
 ```
 
 Los tres deben responder `200`. Prueba también un registro real desde el
@@ -165,6 +183,7 @@ front en el navegador.
 | Síntoma | Causa | Solución |
 |---|---|---|
 | Error de CORS en el navegador | `.env` con URLs `localhost` en vez de la IP/dominio real | Corregir `.env` y actualizar la variable `VITE_API_URL` en GitHub (paso 5) para que se reconstruya la imagen |
+| El navegador no abre `https://...` / error de certificado | El proxy no consiguió el certificado (DNS aún no apunta a la IP, puertos 80/443 cerrados o límite de Let's Encrypt) | `docker compose -f docker-compose.prod.yml logs proxy` |
 | Backend responde 500 en `/` | Faltan llaves de Passport o no son legibles por `www-data` | `passport:keys --force` + `chown -R www-data:www-data storage` |
 | 422 al registrarse: `REGISTRATION_FAILED` | Falta el Personal Access Client de Passport, o falta sembrar los roles (`user`, `admin`, `organizer`) | `passport:client --personal` y `db:seed --class=RolesPermissionSeeder` |
 | `Permission denied` al escribir en `storage/framework/...` | Un comando `artisan` se corrió como root y dejó archivos con ese dueño | `docker compose -f docker-compose.prod.yml exec backend chown -R www-data:www-data storage bootstrap/cache` |

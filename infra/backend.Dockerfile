@@ -16,6 +16,9 @@ WORKDIR /var/www/html
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
 COPY --from=infra backend/docker/apache.conf /etc/apache2/sites-enabled/000-default.conf
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Equivale a `php artisan storage:link`, pero dentro de la imagen: si se
+# hiciera con exec en el contenedor, se perdería en cada redeploy.
+RUN ln -sfn /var/www/html/storage/app/public public/storage \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
