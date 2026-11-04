@@ -1,0 +1,4 @@
+.env
+*.pem
+*firebase-adminsdk*.json
+.claude/
