@@ -3,8 +3,8 @@
 #
 # BEANGO_DOMAIN sale del .env del EC2 (ver docker-compose.prod.yml).
 # Provisional: <ip-con-guiones>.sslip.io, que resuelve a esa IP sin
-# configurar DNS. Para pasar a un dominio propio basta con cambiar la
-# variable, apuntar el DNS (raíz, admin. y api.) y recompilar front/admin.
+# configurar DNS. Con dominio propio (playbeango.com) apuntar en el DNS la
+# raíz, www., admin. y api. a la IP del EC2 y recompilar front/admin.
 
 (common) {
 	encode zstd gzip
@@ -13,6 +13,10 @@
 {$BEANGO_DOMAIN} {
 	import common
 	reverse_proxy front:80
+}
+
+www.{$BEANGO_DOMAIN} {
+	redir https://{$BEANGO_DOMAIN}{uri} permanent
 }
 
 admin.{$BEANGO_DOMAIN} {

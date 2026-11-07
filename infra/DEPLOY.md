@@ -92,12 +92,15 @@ certificado HTTPS. Backend, front y admin ya no publican puertos. Con
 | `https://<dominio>` | front |
 | `https://admin.<dominio>` | admin |
 | `https://api.<dominio>` | backend |
+| `https://www.<dominio>` | redirige a `https://<dominio>` |
 
-Dominio provisional sin configurar DNS: `<ip-con-guiones>.sslip.io` (hoy
-`44-203-210-231.sslip.io`). Depende de la IP pública: si la instancia cambia
-de IP, cambia el dominio y hay que actualizar el `.env` y recompilar
-front/admin. Con un dominio propio, apunta `<dominio>`, `admin.<dominio>` y
-`api.<dominio>` (registros A) a la IP antes de levantar el proxy.
+Dominio actual: `playbeango.com` (DNS en Namecheap). Los registros A de
+`@`, `www`, `admin` y `api` deben apuntar a la IP pública del EC2 antes de
+levantar el proxy: sin ellos Caddy no consigue el certificado. Si la IP de
+la instancia cambia, hay que actualizar esos cuatro registros.
+
+Sin dominio propio sirve `<ip-con-guiones>.sslip.io`, que resuelve a esa IP
+sin configurar DNS (se usó como provisional).
 
 ```env
 APP_KEY=base64:...   # docker compose -f docker-compose.prod.yml run --rm backend php artisan key:generate --show
