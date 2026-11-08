@@ -84,20 +84,21 @@ y el backend rechaza las peticiones por CORS.
 
 Todo entra por el proxy inverso (servicio `proxy`, Caddy, config en
 [`proxy/Caddyfile`](proxy/Caddyfile)), que escucha en 80/443 y saca solo el
-certificado HTTPS. Backend, front y admin ya no publican puertos. Con
+certificado HTTPS. Backend, front, admin y landing ya no publican puertos. Con
 `BEANGO_DOMAIN=<dominio>` quedan:
 
 | URL | Servicio |
 |---|---|
-| `https://<dominio>` | front |
+| `https://www.<dominio>` | landing (repo `landing-beango`) |
+| `https://app.<dominio>` | front |
 | `https://admin.<dominio>` | admin |
 | `https://api.<dominio>` | backend |
-| `https://www.<dominio>` | redirige a `https://<dominio>` |
+| `https://<dominio>` | redirige a `https://www.<dominio>` |
 
 Dominio actual: `playbeango.com` (DNS en Namecheap). Los registros A de
-`@`, `www`, `admin` y `api` deben apuntar a la IP pública del EC2 antes de
+`@`, `www`, `app`, `admin` y `api` deben apuntar a la IP pública del EC2 antes de
 levantar el proxy: sin ellos Caddy no consigue el certificado. Si la IP de
-la instancia cambia, hay que actualizar esos cuatro registros.
+la instancia cambia, hay que actualizar esos cinco registros.
 
 Sin dominio propio sirve `<ip-con-guiones>.sslip.io`, que resuelve a esa IP
 sin configurar DNS (se usó como provisional).
@@ -111,7 +112,7 @@ DB_ROOT_PASSWORD=<contraseña real, no la de ejemplo>
 
 BEANGO_DOMAIN=<dominio>
 APP_URL=https://api.<dominio>
-FRONTEND_URL=https://<dominio>
+FRONTEND_URL=https://app.<dominio>
 ADMIN_URL=https://admin.<dominio>
 VITE_API_URL=https://api.<dominio>/api/v1
 ```
@@ -174,11 +175,12 @@ arriba, `OauthSeed` falla por clave duplicada.
 
 ```bash
 curl -s -o /dev/null -w 'backend: %{http_code}\n' https://api.<dominio>
-curl -s -o /dev/null -w 'front: %{http_code}\n'   https://<dominio>
+curl -s -o /dev/null -w 'landing: %{http_code}\n' https://www.<dominio>
+curl -s -o /dev/null -w 'front: %{http_code}\n'   https://app.<dominio>
 curl -s -o /dev/null -w 'admin: %{http_code}\n'   https://admin.<dominio>
 ```
 
-Los tres deben responder `200`. Prueba también un registro real desde el
+Los cuatro deben responder `200`. Prueba también un registro real desde el
 front en el navegador.
 
 ## Problemas conocidos y solución rápida

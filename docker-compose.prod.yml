@@ -96,6 +96,10 @@ services:
     depends_on:
       - backend
 
+  landing:
+    image: ${DOCKERHUB_NAMESPACE:-willian95}/beango-landing:${LANDING_TAG:-latest}
+    restart: unless-stopped
+
   proxy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -112,6 +116,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
+      - landing
       - front
       - admin
       - backend

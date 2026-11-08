@@ -7,3 +7,6 @@
 [submodule "beango-backend"]
 	path = beango-backend
 	url = git@github.com:CristhianM21/beango-backend.git
+[submodule "landing-beango"]
+	path = landing-beango
+	url = git@github.com:CristhianM21/landing-beango.git

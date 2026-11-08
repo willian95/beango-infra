@@ -2,21 +2,31 @@
 # HTTPS (Let's Encrypt, con ZeroSSL de respaldo) y redirige HTTP → HTTPS.
 #
 # BEANGO_DOMAIN sale del .env del EC2 (ver docker-compose.prod.yml).
-# Provisional: <ip-con-guiones>.sslip.io, que resuelve a esa IP sin
-# configurar DNS. Con dominio propio (playbeango.com) apuntar en el DNS la
-# raíz, www., admin. y api. a la IP del EC2 y recompilar front/admin.
+# Registros A necesarios en el DNS (todos a la IP del EC2): @, www, app,
+# admin y api. Sin alguno, Caddy no consigue el certificado de ese host.
+#
+#   https://www.<dominio>    landing (sitio estático, Astro)
+#   https://<dominio>        redirige a https://www.<dominio>
+#   https://app.<dominio>    front (la app)
+#   https://admin.<dominio>  admin
+#   https://api.<dominio>    backend
 
 (common) {
 	encode zstd gzip
 }
 
-{$BEANGO_DOMAIN} {
+www.{$BEANGO_DOMAIN} {
 	import common
-	reverse_proxy front:80
+	reverse_proxy landing:80
 }
 
-www.{$BEANGO_DOMAIN} {
-	redir https://{$BEANGO_DOMAIN}{uri} permanent
+{$BEANGO_DOMAIN} {
+	redir https://www.{$BEANGO_DOMAIN}{uri} permanent
+}
+
+app.{$BEANGO_DOMAIN} {
+	import common
+	reverse_proxy front:80
 }
 
 admin.{$BEANGO_DOMAIN} {
