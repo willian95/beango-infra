@@ -3,3 +3,4 @@
 *firebase-adminsdk*.json
 .claude/
 secrets/
+client_secret_*.json
