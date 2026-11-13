@@ -2,3 +2,4 @@
 *.pem
 *firebase-adminsdk*.json
 .claude/
+secrets/
